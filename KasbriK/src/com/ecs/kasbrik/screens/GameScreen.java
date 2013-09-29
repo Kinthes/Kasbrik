@@ -9,7 +9,6 @@ import com.ecs.kasbrik.domain.Balle;
 import com.ecs.kasbrik.domain.Brique;
 import com.ecs.kasbrik.domain.Level;
 import com.ecs.kasbrik.domain.Raquette;
-import com.ecs.kasbrik.domain.Brique.TypeBrique;
 import com.ecs.kasbrik.res.Data;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -17,6 +16,7 @@ import com.badlogic.gdx.utils.Pool;
 
 public class GameScreen extends AbstractScreen {
 	private Data	data;
+	
 	private Balle 	balle;	
 	private Raquette raquette;
 	
@@ -37,7 +37,7 @@ public class GameScreen extends AbstractScreen {
 		
 		
 		
-		raquette=new Raquette(Kasbrik.WIDTH/2 - Data.raquette.getRegionWidth()/2 +40,3f);
+		raquette=new Raquette(Kasbrik.WIDTH/2 - Data.raquette.getRegionWidth()/2 ,3f);
 		stage.addActor(raquette);	
 		
 		initLevel();
@@ -66,7 +66,39 @@ public class GameScreen extends AbstractScreen {
 			}		
 	}
 
-	private void moveBalle(float delta){
+	
+	
+	@Override
+	public void render(float delta) {
+		super.render(delta);
+		
+		  Gdx.gl.glClearColor(0, 0, 0, 1);
+		  Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		  stage.act(delta);
+		  stage.draw();
+		  
+		  raquette.getPosition().x+= Gdx.input.getAccelerometerY() * raquette.getVitesse().x; 
+		  if(raquette.getPosition().x < 0) 
+			  raquette.getPosition().x=0;
+		  else if(raquette.getPosition().x > Kasbrik.WIDTH - Data.RAQUETTE_SIZE_X )
+			  raquette.getPosition().x = Kasbrik.WIDTH - Data.RAQUETTE_SIZE_X;
+		  moveBalle(delta, balle);
+	}
+	
+	@Override
+	public void dispose(){
+		super.dispose();
+		data.dispose();
+	}
+	
+	@Override
+	public void resize(int width, int height) {
+		stage.setViewport(Kasbrik.WIDTH, Kasbrik.HEIGHT, true);
+		stage.getCamera().translate(-stage.getGutterWidth(), -stage.getGutterHeight(),0);
+	}
+
+	
+	public void moveBalle(float delta, Balle balle){
 		boolean rebond_x=false, rebond_y=false;
 		Vector2 pos = balle.getPosition();
 		float inc_y=Kasbrik.HEIGHT-(data.BRIQUE_SIZE_Y*Level.VertBriques);	
@@ -85,6 +117,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_y=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.y = ind_y*Data.BRIQUE_SIZE_Y+inc_y-Data.BALLE_SIZE_Y;
 			}
 		
 		// 2eme hitpoint = supérieur droit ****************************************************
@@ -95,6 +128,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_y=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.y = ind_y*Data.BRIQUE_SIZE_Y+inc_y-Data.BALLE_SIZE_Y;
 			}
 		
 		// 3eme hitpoint = droit haut ****************************************************
@@ -106,6 +140,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_x=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.x = ind_x*Data.BRIQUE_SIZE_X+inc_x-Data.BALLE_SIZE_X;
 			}
 		
 		// 4eme hitpoint = droit bas ****************************************************
@@ -117,6 +152,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_x=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.x = ind_x*Data.BRIQUE_SIZE_X+inc_x-Data.BALLE_SIZE_X;
 			}
 		
 		// 5eme hitpoint = inférieur droit ****************************************************
@@ -128,6 +164,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_y=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.y = ind_y*Data.BRIQUE_SIZE_Y+inc_y+Data.BRIQUE_SIZE_Y;
 			}
 		
 		// 6eme hitpoint = inférieur gauche ****************************************************
@@ -139,6 +176,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_y=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.y = ind_y*Data.BRIQUE_SIZE_Y+inc_y+Data.BRIQUE_SIZE_Y;
 			}
 		
 		// 7eme hitpoint = gauche bas ****************************************************
@@ -150,6 +188,7 @@ public class GameScreen extends AbstractScreen {
 				rebond_x=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.x = ind_x*Data.BRIQUE_SIZE_X+inc_x+Data.BRIQUE_SIZE_X;
 			}
 		
 		// 8eme hitpoint = gauche haut ****************************************************
@@ -161,10 +200,16 @@ public class GameScreen extends AbstractScreen {
 				rebond_x=true;
 				stage.getRoot().removeActor(level1.getBriqueTab()[ind_y][ind_x]);
 				level1.getBriqueTab()[ind_y][ind_x]=null;
+				pos.x = ind_x*Data.BRIQUE_SIZE_X+inc_x+Data.BRIQUE_SIZE_X;
 			}
 		
-		if(pos.x >= kasbrik.WIDTH-balle.getWidth() || pos.x<=0 || rebond_x)		
-			balle.getOrientation().x=-balle.getOrientation().x;		
+		if(pos.x >= kasbrik.WIDTH-balle.getWidth()-inc_x || pos.x<=inc_x || rebond_x){		
+			balle.getOrientation().x=-balle.getOrientation().x;
+			if(pos.x >= kasbrik.WIDTH-balle.getWidth()-inc_x)
+				pos.x = kasbrik.WIDTH-balle.getWidth()-inc_x;
+			else if(pos.x<=inc_x)
+				pos.x=inc_x;
+		}
 		
 		if(pos.y >= kasbrik.HEIGHT-balle.getHeight() || pos.y<=0 || rebond_y)		
 			balle.getOrientation().y=-balle.getOrientation().y;		
@@ -178,16 +223,17 @@ public class GameScreen extends AbstractScreen {
 		
 		if(balleRect.overlaps(raqRect)){
 						
-			double dec=((balle.getPosition().x+Data.BALLE_SIZE_X) - (raquette.getPosition().x+(Data.RAQUETTE_SIZE_X/2)))/ (Data.RAQUETTE_SIZE_X/2);
+			double dec=((balle.getPosition().x+Data.BALLE_SIZE_X/2) - (raquette.getPosition().x+(Data.RAQUETTE_SIZE_X/2)))/ (Data.RAQUETTE_SIZE_X/2);
 			if(dec<0){
 				balle.getOrientation().x=-1;
 				dec=-dec;
 			}
 			else
 				balle.getOrientation().x=1;
-			balle.getOrientation().y=-balle.getOrientation().y;
+			//balle.getOrientation().y=-balle.getOrientation().y;
 			
-			if(dec>=-1f && dec <=1.0f){
+			if(dec>=-0.95f && dec <=0.95f){	//(-1,1) angle trop aigu
+				balle.getOrientation().y=-balle.getOrientation().y;
 				double teta= Math.acos(dec);
 				double y_vec = Math.sin(teta);
 			
@@ -224,35 +270,6 @@ public class GameScreen extends AbstractScreen {
 		balle.setPosition(pos);
 		if(balle.getMultiplicateurVitesse()<3)
 			balle.setMultiplicateurVitesse((float)(balle.getMultiplicateurVitesse() + 0.0001));
-	}
-	
-	@Override
-	public void render(float delta) {
-		super.render(delta);
-		
-		  Gdx.gl.glClearColor(0, 0, 0, 1);
-		  Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		  stage.act(delta);
-		  stage.draw();
-		  
-		  raquette.getPosition().x+= Gdx.input.getAccelerometerY() * raquette.getVitesse().x; 
-		  if(raquette.getPosition().x < 0) 
-			  raquette.getPosition().x=0;
-		  else if(raquette.getPosition().x > Kasbrik.WIDTH - Data.RAQUETTE_SIZE_X )
-			  raquette.getPosition().x = Kasbrik.WIDTH - Data.RAQUETTE_SIZE_X;
-		  moveBalle(delta);
-	}
-	
-	@Override
-	public void dispose(){
-		super.dispose();
-		data.dispose();
-	}
-	
-	@Override
-	public void resize(int width, int height) {
-		stage.setViewport(Kasbrik.WIDTH, Kasbrik.HEIGHT, true);
-		stage.getCamera().translate(-stage.getGutterWidth(), -stage.getGutterHeight(),0);
 	}
 
 }

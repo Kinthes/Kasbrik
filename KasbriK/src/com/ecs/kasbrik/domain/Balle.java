@@ -5,8 +5,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.ecs.kasbrik.res.Data;
 
+
+
 public class Balle extends Elmt{
-	
+		
 		private Vector2 orientation; 
 		private float   multiplicateurVitesse;
 
@@ -16,7 +18,7 @@ public class Balle extends Elmt{
 		this.vitesse=new Vector2(2f,2f);
 		this.setHeight(Data.BALLE_SIZE_Y);
 		this.setWidth(Data.BALLE_SIZE_X);
-		this.multiplicateurVitesse=1;
+		this.multiplicateurVitesse=1;		
 	}
 	
 	 public float getMultiplicateurVitesse() {
@@ -41,6 +43,5 @@ public class Balle extends Elmt{
          batch.draw(Data.balle, this.position.x, this.position.y);
 	 }
 
-
-
+	
 }
